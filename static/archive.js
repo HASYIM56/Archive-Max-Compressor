@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
 
         const fileInput = document.getElementById('fileInput').files[0];
+        const archiveMode = document.getElementById('archiveMode').value; // Get archive mode
         if (!fileInput) {
             alert("Please select a file.");
             return;
@@ -19,41 +20,53 @@ document.addEventListener('DOMContentLoaded', function () {
         loadingText.innerText = 'Processing...';
 
         try {
-            // Convert file to binary data
             const fileBuffer = await fileInput.arrayBuffer();
 
-            // Get current date and time
             const now = new Date();
             const tanggal = now.getDate();
             const bulan = now.getMonth() + 1;
             const tahun = now.getFullYear();
             const jam = now.toLocaleTimeString();
 
-            // Create ZIP file
-            const zip = new JSZip();
-            zip.file(fileInput.name, fileBuffer);
-            zip.comment = `CREATED BY HASYIM56, tanggal (${tanggal}), bulan (${bulan}), tahun (${tahun}), pada jam (${jam})`;
+            const fileName = fileInput.name;
 
-            // Generate ZIP file blob
-            const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE" });
+            if (archiveMode === "zip") {
+                const zip = new JSZip();
+                zip.file(fileName, fileBuffer);
+                zip.comment = `CREATED BY HASYIM56, tanggal (${tanggal}), bulan (${bulan}), tahun (${tahun}), pada jam (${jam})`;
+
+                const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE" });
+                handleDownload(blob, "archive_HASYIM56.zip");
+            } else if (archiveMode === "7z") {
+                // Simulate 7z compression
+                const sevenZipContent = new Blob([fileBuffer], { type: "application/x-7z-compressed" });
+                const txtFile = `CREATED BY HASYIM56, pada (${tanggal}, ${bulan}, ${tahun}, ${jam})`;
+
+                const zip = new JSZip();
+                zip.file(fileName, sevenZipContent);
+                zip.file("HASYIM56.txt", txtFile);
+
+                const blob = await zip.generateAsync({ type: "blob" });
+                handleDownload(blob, "archive_HASYIM56.7z");
+            }
 
             loadingContainer.style.display = 'none';
             statusMessage.innerText = "File compressed and archived successfully.";
             downloadContainer.style.display = 'block';
 
-            // Add download functionality
-            document.getElementById('downloadButton').addEventListener('click', function () {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'files_H56.zip'; // Desired file name
-                a.click();
-                window.URL.revokeObjectURL(url);
-            });
         } catch (error) {
             loadingContainer.style.display = 'none';
             statusMessage.innerText = "Error during compression.";
             console.error('Error:', error);
         }
     });
+
+    function handleDownload(blob, fileName) {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
 });
