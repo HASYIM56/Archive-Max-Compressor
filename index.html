@@ -16,6 +16,10 @@
         <h1 class="fade-in">Archive Max Compressor</h1>
         <form id="archiveForm" class="fade-in" enctype="multipart/form-data">
             <input type="file" id="fileInput" name="file" accept="*" required>
+            <select id="archiveMode" name="mode" required>
+                <option value="zip">ZIP (Default)</option>
+                <option value="7z">7z (Max Compression)</option>
+            </select>
             <input type="submit" value="Compress and Archive">
         </form>
 
